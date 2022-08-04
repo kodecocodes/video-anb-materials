@@ -21,11 +21,13 @@ fun buildClient(): OkHttpClient =
 @OptIn(ExperimentalSerializationApi::class)
 fun buildRetrofit(): Retrofit {
   val contentType = "application/json".toMediaType()
-
+  val json = Json {
+    ignoreUnknownKeys = true
+  }
   return Retrofit.Builder()
       .client(buildClient())
       .baseUrl(BASE_URL)
-      .addConverterFactory(Json.asConverterFactory(contentType))
+      .addConverterFactory(json.asConverterFactory(contentType))
       .build()
 }
 
