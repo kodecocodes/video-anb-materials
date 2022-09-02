@@ -34,7 +34,6 @@
 
 package com.yourcompany.android.taskie.networking
 
-import com.yourcompany.android.taskie.model.DeleteNoteResponse
 import com.yourcompany.android.taskie.model.Failure
 import com.yourcompany.android.taskie.model.Result
 import com.yourcompany.android.taskie.model.Success
@@ -47,8 +46,6 @@ import com.yourcompany.android.taskie.model.response.GetTasksResponse
 import com.yourcompany.android.taskie.model.response.LoginResponse
 import com.yourcompany.android.taskie.model.response.RegisterResponse
 import com.yourcompany.android.taskie.model.response.UserProfileResponse
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -166,11 +163,11 @@ class RemoteApi(private val apiService: RemoteApiService) {
 
   fun getUserProfile(onUserProfileReceived: (Result<UserProfile>) -> Unit) {
     getTasks { result ->
-      if (result is Failure && result.error !is NullPointerException) {
-        onUserProfileReceived(Failure(result.error))
-        return@getTasks
+      val taskCount = if (result is Success) {
+        result.data.size
+      } else {
+        0
       }
-      val tasks = result as Success
       apiService.getMyProfile().enqueue(object : Callback<UserProfileResponse> {
         override fun onFailure(call: Call<UserProfileResponse>, error: Throwable) {
           onUserProfileReceived(Failure(error))
@@ -188,7 +185,7 @@ class RemoteApi(private val apiService: RemoteApiService) {
                     UserProfile(
                         userProfileResponse.email,
                         userProfileResponse.name,
-                        tasks.data.size
+                        taskCount
                     )
                 )
             )

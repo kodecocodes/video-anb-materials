@@ -151,11 +151,11 @@ class RemoteApi(private val apiService: RemoteApiService) {
 
   fun getUserProfile(onUserProfileReceived: (Result<UserProfile>) -> Unit) {
     getTasks { result ->
-      if (result is Failure && result.error !is NullPointerException) {
-        onUserProfileReceived(Failure(result.error))
-        return@getTasks
+      val taskCount = if (result is Success) {
+        result.data.size
+      } else {
+        0
       }
-      val tasks = result as Success
       apiService.getMyProfile().enqueue(object : Callback<UserProfileResponse> {
         override fun onFailure(call: Call<UserProfileResponse>, error: Throwable) {
           onUserProfileReceived(Failure(error))
@@ -173,7 +173,7 @@ class RemoteApi(private val apiService: RemoteApiService) {
                     UserProfile(
                         userProfileResponse.email,
                         userProfileResponse.name,
-                        tasks.data.size
+                        taskCount
                     )
                 )
             )
